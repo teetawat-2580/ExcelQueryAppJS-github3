@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Data Query</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .loading {
+            color: #31708f;
+            background-color: #d9edf7;
+        }
+        #fileInfo {
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Excel Data Query</h1>
+    
+    <div class="section">
+        <h2>Upload Excel File</h2>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" capture="environment">
+        <button id="uploadBtn" onclick="uploadFile()">Upload</button>
+        <div id="fileInfo"></div>
+        <div id="uploadStatus" class="status"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Search by ID</h2>
+        <input type="text" id="searchId" placeholder="Enter ID">
+        <button id="searchBtn" onclick="searchById()" disabled>Search</button>
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        async function uploadFile() {
+            const fileInput = document.getElementById('excelFile');
+            
+            if (!fileInput.files.length) {
+                showStatus('Please select a file', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('excelFile', file);
+            
+            try {
+                // Disable button during upload
+                uploadBtn.disabled = true;
+                showStatus('Uploading...', 'loading');
+                
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus(data.message, 'success');
+                    fileInfo.textContent = `Uploaded: ${data.filename}`;
+                    searchBtn.disabled = false;
+                } else {
+                    showStatus(data.error || 'Upload failed', 'error');
+                    if (data.details) {
+                        console.error('Server error details:', data.details);
+                    }
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        async function searchById() {
+            const id = document.getElementById('searchId').value.trim();
+            const resultElement = document.getElementById('result');
+            
+            if (!id) {
+                resultElement.innerHTML = '<div class="error">Please enter an ID</div>';
+                return;
+            }
+            
+            try {
+                searchBtn.disabled = true;
+                resultElement.innerHTML = '<div class="loading">Searching...</div>';
+                
+                const response = await fetch(`/search/${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultElement.innerHTML = `
+                        <h3>Search Result for ID ${id}:</h3>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultElement.innerHTML = `<div class="error">${data.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                resultElement.innerHTML = `<div class="error">Error searching for ID: ${error.message}</div>`;
+            } finally {
+                searchBtn.disabled = false;
+            }
+        }
+        
+        function showStatus(message, type) {
+            uploadStatus.textContent = message;
+            uploadStatus.className = 'status ' + type;
+        }
+        
+        // Enable file type validation on selection
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && !file.name.match(/\.(xlsx|xls)$/i)) {
+                showStatus('Please select an Excel file (.xlsx or .xls)', 'error');
+                uploadBtn.disabled = true;
+            } else {
+                uploadStatus.textContent = '';
+                uploadStatus.className = 'status';
+                uploadBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

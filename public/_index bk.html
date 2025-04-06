@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Data Query</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 5px; }
+        button { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        input { padding: 8px; width: 200px; }
+        #result { margin-top: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Excel Data Query</h1>
+    
+    <div class="section">
+        <h2>Upload Excel File</h2>
+        <input type="file" id="excelFile" accept=".xlsx, .xls">
+        <button onclick="uploadFile()">Upload</button>
+        <p id="uploadStatus"></p>
+    </div>
+    
+    <div class="section">
+        <h2>Search by ID</h2>
+        <input type="text" id="searchId" placeholder="Enter ID">
+        <button onclick="searchById()">Search</button>
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('excelFile');
+            const statusElement = document.getElementById('uploadStatus');
+            
+            if (!fileInput.files.length) {
+                statusElement.textContent = 'Please select a file';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('excelFile', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('http://localhost:3000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                statusElement.textContent = data.message || 'Upload successful';
+            } catch (error) {
+                statusElement.textContent = 'Error uploading file';
+                console.error(error);
+            }
+        }
+        
+        async function searchById() {
+            const id = document.getElementById('searchId').value;
+            const resultElement = document.getElementById('result');
+            
+            if (!id) {
+                resultElement.innerHTML = 'Please enter an ID';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:3000/search/${id}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultElement.innerHTML = data.error;
+                } else {
+                    let html = '<h3>Search Result:</h3><ul>';
+                    for (const key in data) {
+                        html += `<li><strong>${key}:</strong> ${data[key]}</li>`;
+                    }
+                    html += '</ul>';
+                    resultElement.innerHTML = html;
+                }
+            } catch (error) {
+                resultElement.innerHTML = 'Error searching for ID';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
