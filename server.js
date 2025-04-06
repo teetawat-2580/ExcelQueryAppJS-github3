@@ -85,7 +85,7 @@ app.get('/search/:id', (req, res) => {
         });
     }
     
-    const result = excelData.find(item => item.ID == req.params.id);
+    const result = excelData.find(item => item['รหัสพนักงาน (Employee ID)'] == req.params.id);
     if (result) {
         res.json({
             success: true,
