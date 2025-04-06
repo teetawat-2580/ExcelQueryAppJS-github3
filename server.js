@@ -1,3 +1,45 @@
+//convert to readable date/time format
+
+function excelToReadableDate(excelSerial) {
+    // Excel's epoch is December 30, 1899 (yes, really!)
+    const excelEpoch = new Date(1899, 11, 30);
+    
+    // Calculate days and milliseconds
+    const days = Math.floor(excelSerial);
+    const msFraction = (excelSerial - days) * 86400000; // Milliseconds in a day
+    
+    // Create final date
+    const date = new Date(excelEpoch.getTime() + days * 86400000 + msFraction);
+    
+    // Format as "DD-MM-YYYY HH:MM:SS"
+    return date.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(',', '');
+  }
+
+const startTime = excelToReadableDate(45666.6091319444); 
+// Returns "09-01-2025 14:37:09"
+
+const completionTime = excelToReadableDate(45666.6182175926); 
+// Returns "09-01-2025 14:50:14"
+
+function excelToThaiDate(excelSerial) {
+    const date = new Date((excelSerial - 25569) * 86400000);
+    return date.toLocaleDateString('th-TH', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+
+  //convert to readable date/time format - end
 const express = require('express');
 const multer = require('multer');
 const xlsx = require('xlsx');
@@ -87,9 +129,18 @@ app.get('/search/:id', (req, res) => {
     
     const result = excelData.find(item => item['รหัสพนักงาน (Employee ID)'] == req.params.id);
     if (result) {
+
+        //convert to readable date/time format
+        const formatted = {
+            ...result,
+            'Start time': excelToReadableDate(result['Start time']),
+            'Completion time': excelToReadableDate(result['Completion time']),
+            'ทำการปรับปรุงเสร็จเรียบร้อยเมื่อวันที่': excelToReadableDate(result['ทำการปรับปรุงเสร็จเรียบร้อยเมื่อวันที่'])
+          };
+         //convert to readable date/time format - end
         res.json({
             success: true,
-            data: result
+            data: formatted
         });
     } else {
         res.status(404).json({ 
