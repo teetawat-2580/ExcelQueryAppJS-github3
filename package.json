@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
+    "excelqueryappjs": "file:",
     "express": "^5.1.0",
     "multer": "^1.4.5-lts.2",
     "xlsx": "^0.18.5"
