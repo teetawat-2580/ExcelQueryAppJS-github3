@@ -279,7 +279,11 @@ app.post('/api/fetch-url', async (req, res) => {
     }
 });
 
-// Start Express Server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ExcelQueryAppJS Server running on port ${PORT}`);
-});
+// Start Express Server locally or export for serverless environments (Vercel)
+if (require.main === module) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`ExcelQueryAppJS Server running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
