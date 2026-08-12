@@ -56,7 +56,7 @@ function formatExcelValue(val, keyName = '') {
 
 // Helper: Parse workbook buffer into structured dataset
 function parseWorkbookBuffer(buffer, requestedSheet) {
-    const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true, raw: false });
+    const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true, dense: true });
     const sheetNames = workbook.SheetNames;
 
     if (!sheetNames || sheetNames.length === 0) {
