@@ -1,7 +1,10 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "public/**"
+      "includeFiles": [
+        "public/**",
+        "node_modules/express/**"
+      ]
     }
   },
   "rewrites": [
