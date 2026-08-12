@@ -14,16 +14,19 @@ const axios = __nccwpck_require__(2246);
 
 const app = express();
 
-// Memory storage for fast and clean file uploads without disk pollution
+// Multer: memory storage, 4.5MB limit to match Vercel's serverless payload cap
 const upload = multer({ 
     storage: multer.memoryStorage(), 
-    limits: { fileSize: 25 * 1024 * 1024 } 
+    limits: { fileSize: 4.5 * 1024 * 1024 } 
 });
+
+// Body parser only for JSON/form routes — NOT applied globally so multer can
+// read multipart streams unmodified
+const jsonParser = express.json({ limit: '4mb' });
+const urlencodedParser = express.urlencoded({ extended: true, limit: '4mb' });
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__nccwpck_require__.ab + "public"));
 
 // Default external feed (OneDrive download link)
@@ -255,7 +258,7 @@ app.post('/api/upload', handleUpload, (req, res) => {
     }
 });
 
-app.post('/api/fetch-url', async (req, res) => {
+app.post('/api/fetch-url', jsonParser, urlencodedParser, async (req, res) => {
     const { url, sheet } = req.body;
     if (!url) {
         return res.status(400).json({ error: 'URL parameter is required' });
