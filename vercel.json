@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "{public/**,node_modules/express/**}"
+      "includeFiles": "node_modules/express/**"
     }
   },
   "rewrites": [
@@ -11,10 +11,6 @@
     },
     {
       "source": "/upload",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/((?!.*\\.).*)",
       "destination": "/api/index.js"
     }
   ]
