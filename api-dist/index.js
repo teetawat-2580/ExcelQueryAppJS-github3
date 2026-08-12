@@ -1,11 +1,16 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 7603:
+/***/ 6836:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 (__nccwpck_require__(1732).config)();
 const express = __nccwpck_require__(7617);
+__nccwpck_require__(8519);
+__nccwpck_require__(8058);
+__nccwpck_require__(1154);
+__nccwpck_require__(6746);
+__nccwpck_require__(518);
 const multer = __nccwpck_require__(5950);
 const XLSX = __nccwpck_require__(7381);
 const cors = __nccwpck_require__(5118);
@@ -33,6 +38,7 @@ const DEFAULT_ONEDRIVE_URL = process.env.ONEDRIVE_URL || 'https://onedrive.live.
 function formatExcelValue(val, keyName = '') {
     if (val === null || val === undefined || val === '') return '';
     
+    // Check if key implies a date field or value is serial date number (between 10000 and 60000)
     const isDateKey = keyName && /date|time|วันที่|เวลา/i.test(keyName);
     
     if (typeof val === 'number' && (isDateKey || (val > 20000 && val < 60000))) {
@@ -54,7 +60,7 @@ function formatExcelValue(val, keyName = '') {
     
     if (val instanceof Date) {
         const pad = num => num.toString().padStart(2, '0');
-        return `${pad(val.getDate())}/${pad(val.getMonth() + 1)}/${pad(val.getFullYear())}`;
+        return `${pad(val.getDate())}/${pad(val.getMonth() + 1)}/${val.getFullYear()}`;
     }
 
     return val;
@@ -69,6 +75,7 @@ function parseWorkbookBuffer(buffer, requestedSheet) {
         throw new Error('Workbook contains no sheets');
     }
 
+    // Select target sheet: requested sheet > sheet containing 'summary' > first sheet
     let activeSheet = requestedSheet && sheetNames.includes(requestedSheet) ? requestedSheet : null;
     if (!activeSheet) {
         const summaryMatch = sheetNames.find(n => n.toLowerCase().includes('summary'));
@@ -90,6 +97,7 @@ function parseWorkbookBuffer(buffer, requestedSheet) {
         };
     }
 
+    // Process and format data rows
     const headers = Object.keys(rawData[0] || {});
     const data = rawData.map(row => {
         const formattedRow = {};
@@ -152,8 +160,10 @@ function getFallbackDataset(targetSheet) {
     };
 }
 
+// In-memory cache for current active dataset
 let currentMemoryDataset = null;
 
+// Route: Get data from OneDrive / Default URL or memory cache
 app.get('/api/excel-data', async (req, res) => {
     const targetSheet = req.query.sheet;
     const customUrl = req.query.url || DEFAULT_ONEDRIVE_URL;
@@ -194,6 +204,7 @@ app.get('/api/excel-data', async (req, res) => {
     }
 });
 
+// Route: Upload local Excel file
 app.post('/upload', upload.single('excelFile'), (req, res) => {
     try {
         if (!req.file || !req.file.buffer) {
@@ -219,6 +230,7 @@ app.post('/upload', upload.single('excelFile'), (req, res) => {
     }
 });
 
+// Alias for upload endpoint
 app.post('/api/upload', upload.single('excelFile'), (req, res) => {
     try {
         if (!req.file || !req.file.buffer) {
@@ -243,6 +255,7 @@ app.post('/api/upload', upload.single('excelFile'), (req, res) => {
     }
 });
 
+// Route: Fetch Excel from custom HTTP/HTTPS URL
 app.post('/api/fetch-url', async (req, res) => {
     const { url, sheet } = req.body;
     if (!url) {
@@ -68473,7 +68486,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"100":"Continue","101":"Switching Pro
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(7603);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(6836);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()

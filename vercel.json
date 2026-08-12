@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "node_modules/express/**"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",

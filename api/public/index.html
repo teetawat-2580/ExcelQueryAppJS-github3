@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Analytics Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="brand-title">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-table-cells"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Excel Analytics Workspace</h1>
+                    <p id="sourceInfoLabel">Live Data & Multi-Sheet Excel Viewer</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="toggleUrlBtn">
+                    <i class="fa-solid fa-link"></i> Web URL / OneDrive
+                </button>
+                <button class="btn btn-primary" id="openUploadBtn">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Excel
+                </button>
+            </div>
+        </header>
+
+        <!-- Remote URL Sync Bar -->
+        <div class="url-bar-container" id="urlBarContainer" style="display: none;">
+            <i class="fa-solid fa-globe search-icon" style="align-self: center; padding-left: 8px; color: var(--text-dim);"></i>
+            <input type="url" id="remoteUrlInput" placeholder="Paste OneDrive or direct Excel URL (.xlsx / .xls)...">
+            <button class="btn btn-primary" id="syncUrlBtn">
+                <i class="fa-solid fa-rotate"></i> Sync Data
+            </button>
+        </div>
+
+        <!-- KPI Grid -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Total Rows</span>
+                    <h2 id="kpiTotalRows">0</h2>
+                </div>
+                <div class="kpi-badge-icon">
+                    <i class="fa-solid fa-list-ol"></i>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Total Columns</span>
+                    <h2 id="kpiTotalCols">0</h2>
+                </div>
+                <div class="kpi-badge-icon">
+                    <i class="fa-solid fa-columns"></i>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Active Sheet</span>
+                    <h2 id="kpiActiveSheet" style="font-size: 1.2rem;">-</h2>
+                </div>
+                <div class="kpi-badge-icon">
+                    <i class="fa-solid fa-file-excel"></i>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Matching Records</span>
+                    <h2 id="kpiFilteredRows">0</h2>
+                </div>
+                <div class="kpi-badge-icon">
+                    <i class="fa-solid fa-filter"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sheet Selector Tabs -->
+        <div id="sheetTabs" class="sheet-tabs-container"></div>
+
+        <!-- Control Toolbar -->
+        <div class="toolbar-section">
+            <div class="search-box-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchBox" placeholder="Type to search instantly across all columns...">
+            </div>
+            <div class="toolbar-actions">
+                <button class="btn btn-secondary" id="refreshBtn" title="Reload Dataset">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                </button>
+                <button class="btn btn-success" id="exportCsvBtn" title="Export Current View to CSV">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Data Table Card -->
+        <main class="table-card">
+            <div class="table-wrapper">
+                <table id="dataTable" class="custom-table">
+                    <thead>
+                        <!-- Headers injected dynamically -->
+                    </thead>
+                    <tbody>
+                        <!-- Rows injected dynamically -->
+                    </tbody>
+                </table>
+                <div id="stateMessage" class="state-message">
+                    <div class="spinner"></div>
+                    <p>Loading spreadsheet data...</p>
+                </div>
+            </div>
+
+            <!-- Pagination Bar -->
+            <footer class="pagination-bar">
+                <div id="paginationInfo">Showing 0 of 0 records</div>
+                <div class="page-controls">
+                    <button class="btn btn-secondary" id="prevPageBtn" disabled><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                    <span id="pageIndicator" style="font-weight: 600; padding: 0 8px;">Page 1 of 1</span>
+                    <button class="btn btn-secondary" id="nextPageBtn" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Modal File Uploader Overlay -->
+    <div class="dropzone-overlay" id="dropzoneOverlay">
+        <div class="dropzone-card">
+            <div class="dropzone-icon">
+                <i class="fa-solid fa-file-excel"></i>
+            </div>
+            <h2>Upload Excel File</h2>
+            <p style="color: var(--text-muted); margin: 10px 0 20px 0;">Drag and drop your spreadsheet (.xlsx, .xls) here or click to browse</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button class="btn btn-secondary" id="closeUploadBtn">Cancel</button>
+                <button class="btn btn-primary" id="browseFileBtn">Browse File</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
