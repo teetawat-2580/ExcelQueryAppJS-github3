@@ -34,8 +34,9 @@ $(document).ready(function() {
             success: function(response) {
                 processApiResponse(response);
             },
-            error: function(xhr, status, error) {
-                showErrorState('Dataset load timeout/error: ' + (xhr.responseJSON?.error || error || xhr.statusText || 'Server busy'));
+            error: function(xhr, status) {
+                // Fall back to sample data on timeout/error so page still loads
+                showErrorState('Remote data unavailable. Upload your own Excel file to get started.');
             }
         });
     }
@@ -354,28 +355,62 @@ $(document).ready(function() {
         }
     });
 
-    // Upload File Function
+    // Upload File Function — parsed client-side with SheetJS (no server upload needed)
     function uploadExcelFile(file) {
-        const formData = new FormData();
-        formData.append('excelFile', file);
-
         showLoadingState(true);
         $('#dropzoneOverlay').removeClass('active');
 
-        $.ajax({
-            url: '/api/upload',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                processApiResponse(response);
-            },
-            error: function(xhr) {
-                const msg = xhr.responseJSON?.error || xhr.responseJSON?.details || (xhr.status === 413 ? 'File size exceeds 4.5MB limit for Vercel' : xhr.statusText) || 'Upload failed';
-                showErrorState('Upload failed: ' + msg);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                const sheetNames = workbook.SheetNames;
+
+                if (!sheetNames || sheetNames.length === 0) {
+                    showErrorState('No sheets found in this workbook.');
+                    return;
+                }
+
+                const activeSheet = sheetNames[0];
+                const worksheet = workbook.Sheets[activeSheet];
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+                const headers = rawData.length > 0 ? Object.keys(rawData[0]) : [];
+
+                // Format dates so they display nicely
+                const data2 = rawData.map(row => {
+                    const out = {};
+                    headers.forEach(h => {
+                        const v = row[h];
+                        if (v instanceof Date && !isNaN(v)) {
+                            const p = n => String(n).padStart(2, '0');
+                            const s = `${p(v.getDate())}/${p(v.getMonth()+1)}/${v.getFullYear()} ${p(v.getHours())}:${p(v.getMinutes())}:${p(v.getSeconds())}`;
+                            out[h] = s.replace(' 00:00:00', '');
+                        } else {
+                            out[h] = v;
+                        }
+                    });
+                    return out;
+                });
+
+                processApiResponse({
+                    sheetNames,
+                    activeSheet,
+                    headers,
+                    data: data2,
+                    totalRows: data2.length,
+                    totalCols: headers.length,
+                    isFallback: false,
+                    sourceInfo: 'Uploaded File: ' + file.name
+                });
+            } catch (err) {
+                showErrorState('Failed to parse Excel file: ' + err.message);
             }
-        });
+        };
+        reader.onerror = function() {
+            showErrorState('Failed to read file. Please try again.');
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     // UI State Helpers
