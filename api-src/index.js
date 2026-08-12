@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const multer = require('multer');
 const XLSX = require('xlsx');
 const cors = require('cors');
 const path = require('path');
@@ -8,14 +7,7 @@ const axios = require('axios');
 
 const app = express();
 
-// Multer: memory storage, 4.5MB limit to match Vercel's serverless payload cap
-const upload = multer({ 
-    storage: multer.memoryStorage(), 
-    limits: { fileSize: 4.5 * 1024 * 1024 } 
-});
-
-// Body parser only for JSON/form routes — NOT applied globally so multer can
-// read multipart streams unmodified
+// Body parser for JSON routes only
 const jsonParser = express.json({ limit: '4mb' });
 const urlencodedParser = express.urlencoded({ extended: true, limit: '4mb' });
 
@@ -191,66 +183,6 @@ app.get('/api/excel-data', async (req, res) => {
     }
 });
 
-// Helper middleware to handle multer errors gracefully with JSON responses
-const handleUpload = (req, res, next) => {
-    upload.single('excelFile')(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        } else if (err) {
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        }
-        next();
-    });
-};
-
-app.post('/upload', handleUpload, (req, res) => {
-    try {
-        if (!req.file || !req.file.buffer) {
-            return res.status(400).json({ error: 'No file was uploaded' });
-        }
-
-        const requestedSheet = req.query.sheet || req.body.sheet;
-        currentMemoryDataset = {
-            buffer: req.file.buffer,
-            sourceInfo: `Uploaded File: ${req.file.originalname}`
-        };
-
-        const result = parseWorkbookBuffer(req.file.buffer, requestedSheet);
-        result.success = true;
-        result.sourceInfo = currentMemoryDataset.sourceInfo;
-        return res.json(result);
-    } catch (error) {
-        console.error('File Upload Error:', error.message);
-        return res.status(400).json({
-            error: 'Failed to parse uploaded Excel file',
-            details: error.message
-        });
-    }
-});
-
-app.post('/api/upload', handleUpload, (req, res) => {
-    try {
-        if (!req.file || !req.file.buffer) {
-            return res.status(400).json({ error: 'No file was uploaded' });
-        }
-
-        const requestedSheet = req.query.sheet || req.body.sheet;
-        currentMemoryDataset = {
-            buffer: req.file.buffer,
-            sourceInfo: `Uploaded File: ${req.file.originalname}`
-        };
-
-        const result = parseWorkbookBuffer(req.file.buffer, requestedSheet);
-        result.success = true;
-        result.sourceInfo = currentMemoryDataset.sourceInfo;
-        return res.json(result);
-    } catch (error) {
-        return res.status(400).json({
-            error: 'Failed to parse uploaded file',
-            details: error.message
-        });
-    }
-});
 
 app.post('/api/fetch-url', jsonParser, urlencodedParser, async (req, res) => {
     const { url, sheet } = req.body;
