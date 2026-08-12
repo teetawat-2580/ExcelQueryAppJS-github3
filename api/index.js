@@ -1,6 +1,10 @@
 require('dotenv').config();
 const express = require('express');
-require('express/lib/router');
+require('express/lib/router/index.js');
+require('express/lib/router/layer.js');
+require('express/lib/router/route.js');
+require('express/lib/middleware/init.js');
+require('express/lib/middleware/query.js');
 const multer = require('multer');
 const XLSX = require('xlsx');
 const cors = require('cors');
