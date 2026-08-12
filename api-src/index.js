@@ -188,7 +188,19 @@ app.get('/api/excel-data', async (req, res) => {
     }
 });
 
-app.post('/upload', upload.single('excelFile'), (req, res) => {
+// Helper middleware to handle multer errors gracefully with JSON responses
+const handleUpload = (req, res, next) => {
+    upload.single('excelFile')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        }
+        next();
+    });
+};
+
+app.post('/upload', handleUpload, (req, res) => {
     try {
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ error: 'No file was uploaded' });
@@ -213,7 +225,7 @@ app.post('/upload', upload.single('excelFile'), (req, res) => {
     }
 });
 
-app.post('/api/upload', upload.single('excelFile'), (req, res) => {
+app.post('/api/upload', handleUpload, (req, res) => {
     try {
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ error: 'No file was uploaded' });

@@ -363,7 +363,7 @@ $(document).ready(function() {
         $('#dropzoneOverlay').removeClass('active');
 
         $.ajax({
-            url: '/upload',
+            url: '/api/upload',
             type: 'POST',
             data: formData,
             processData: false,
@@ -372,7 +372,8 @@ $(document).ready(function() {
                 processApiResponse(response);
             },
             error: function(xhr) {
-                showErrorState('Upload failed: ' + (xhr.responseJSON?.error || 'Unknown error'));
+                const msg = xhr.responseJSON?.error || xhr.responseJSON?.details || (xhr.status === 413 ? 'File size exceeds 4.5MB limit for Vercel' : xhr.statusText) || 'Upload failed';
+                showErrorState('Upload failed: ' + msg);
             }
         });
     }
