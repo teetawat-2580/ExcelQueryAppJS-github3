@@ -19,7 +19,7 @@ const upload = multer({
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Default external feed (OneDrive download link)
 const DEFAULT_ONEDRIVE_URL = process.env.ONEDRIVE_URL || 'https://onedrive.live.com/download?resid=AiZGf0GxzNdKjMsJ0UHlFy8sLRHLOg?e=2Ca30c';
