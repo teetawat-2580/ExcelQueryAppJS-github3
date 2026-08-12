@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "api/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && ncc build api-src/index.js -o api",
+    "dev": "node server.js",
+    "build": "npx @vercel/ncc build api-src/index.js -o api",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

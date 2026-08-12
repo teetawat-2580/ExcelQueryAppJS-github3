@@ -30,11 +30,12 @@ $(document).ready(function() {
             url: endpoint,
             type: 'GET',
             dataType: 'json',
+            timeout: 5000,
             success: function(response) {
                 processApiResponse(response);
             },
-            error: function(xhr) {
-                showErrorState('Failed to load dataset: ' + (xhr.responseJSON?.error || xhr.statusText));
+            error: function(xhr, status, error) {
+                showErrorState('Dataset load timeout/error: ' + (xhr.responseJSON?.error || error || xhr.statusText || 'Server busy'));
             }
         });
     }

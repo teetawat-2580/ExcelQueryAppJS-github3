@@ -171,7 +171,7 @@ app.get('/api/excel-data', async (req, res) => {
     try {
         const response = await axios.get(customUrl, {
             responseType: 'arraybuffer',
-            timeout: 10000,
+            timeout: 2500,
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': '*/*'
@@ -187,9 +187,9 @@ app.get('/api/excel-data', async (req, res) => {
         result.sourceInfo = currentMemoryDataset.sourceInfo;
         return res.json(result);
     } catch (error) {
-        console.warn('Primary fetch failed, loading interactive fallback dataset:', error.message);
+        console.warn('Primary fetch failed or timed out, loading instant sample dataset:', error.message);
         const fallback = getFallbackDataset(targetSheet);
-        fallback.warning = `Could not load remote feed (${error.message}). Displaying sample dataset.`;
+        fallback.warning = `Remote feed load timed out (${error.message}). Displaying sample dataset.`;
         return res.json(fallback);
     }
 });
